@@ -1,0 +1,57 @@
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+// In-memory array to store books
+let books = [
+  { id: 1, title: "Book One", author: "Author One" },
+  { id: 2, title: "Book Two", author: "Author Two" }
+];
+
+// GET all books
+app.get('/books', (req, res) => {
+  res.json(books);
+});
+
+// POST add new book
+app.post('/books', (req, res) => {
+  const { title, author } = req.body;
+  if(!title || !author) {
+    return res.status(400).json({ error: "Title and Author are required" });
+  }
+  const newBook = {
+    id: books.length ? books[books.length - 1].id + 1 : 1,
+    title,
+    author
+  };
+  books.push(newBook);
+  res.status(201).json(newBook);
+});
+
+// PUT update book by id
+app.put('/books/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const bookIndex = books.findIndex(b => b.id === id);
+  if(bookIndex === -1) {
+    return res.status(404).json({ error: "Book not found" });
+  }
+  books[bookIndex] = {...books[bookIndex], ...req.body, id};
+  res.json(books[bookIndex]);
+});
+
+// DELETE book by id
+app.delete('/books/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const bookIndex = books.findIndex(b => b.id === id);
+  if(bookIndex === -1) {
+    return res.status(404).json({ error: "Book not found" });
+  }
+  books.splice(bookIndex, 1);
+  res.status(204).send();
+});
+
+app.listen(port, () => {
+  console.log(Server running at http://localhost:${port});
+});
